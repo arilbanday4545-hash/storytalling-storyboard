@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portofolio | Muhamad Najril Simban</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* RESET STYLE & VARIABLE - ANTI GESER HP & TRANSPARENT FOR MATRIX EFFECT */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #060913;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+
+        * {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            --bg-dark: #060913;
+            --bg-card: rgba(13, 21, 39, 0.75); /* Dibuat semi transparan agar tembus pandang */
+            --text-white: #ffffff;
+            --text-gray: #a0aec0;
+            --neon-blue: #00f2fe;
+            --neon-purple: #4facfe;
+            --code-font: 'Fira Code', monospace;
+        }
+
+        body {
+            color: var(--text-white);
+            position: relative;
+            background: transparent; /* Supaya canvas di belakangnya kelihatan */
+        }
+
+        /* 3D PARTICLE CANVAS BACKGROUND (MATRIX GLOWING RAIN) */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2; /* Di paling belakang */
+            pointer-events: none;
+            background-color: #060913; /* Warna dasar dipindah ke canvas */
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--neon-purple), var(--neon-blue));
+            border-radius: 4px;
+        }
+
+        /* NAVIGATION BAR */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(6, 9, 19, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 5%;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+        }
+
+        .nav-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-white);
+            letter-spacing: 1px;
+            font-family: var(--code-font);
+        }
+
+        .nav-logo span {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links li {
+            margin-left: 25px;
+        }
+
+        .nav-links a {
+            color: var(--text-gray);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-blue);
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover {
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+        }
+
+        /* MENU TOGGLE FOR MOBILE */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            z-index: 1001;
+        }
+
+        .menu-toggle span {
+            width: 24px;
+            height: 3px;
+            background-color: var(--text-white);
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        /* HERO / HOME SECTION */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 100px 20px 40px 20px;
+            background: transparent; /* Supaya tembus pandang ke partikel */
+        }
+
+        .hero-content {
+            width: 100%;
+            max-width: 800px;
+            z-index: 10;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(24px, 5vw, 48px);
+            margin-bottom: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .neon-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
+        }
+
+        .typing-text {
+            font-family: var(--code-font);
+            font-size: clamp(14px, 2.5vw, 20px);
+            color: var(--text-gray);
+            margin-bottom: 35px;
+            min-height: 25px;
+        }
+
+        .typed-cursor {
+            color: var(--neon-blue);
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+            color: #000;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 25px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.4);
+            transition: 0.3s ease;
+            font-size: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px var(--neon-blue);
+        }
+
+        /* SECTION GLOBAL TITLE */
+        .section-title {
+            text-align: center;
+            margin-bottom: 45px;
+            padding: 0 10px;
+        }
+
+        .section-title h2 {
+            font-size: clamp(22px, 4vw, 34px);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .section-title .subtitle {
+            color: var(--neon-blue);
+            margin-top: 8px;
+            font-size: clamp(13px, 1.8vw, 15px);
+            font-style: italic;
+        }
+
+        .underline {
+            width: 60px;
+            height: 4px;
+            background: var(--neon-blue);
+            margin: 12px auto 0;
+            border-radius: 2px;
+            box-shadow: 0 0 8px var(--neon-blue);
+        }
+
+        /* ABOUT SECTION */
+        .about-section {
+            padding: 80px 5%;
+            background-color: var(--bg-card);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(0, 242, 254, 0.05);
+            border-bottom: 1px solid rgba(0, 242, 254, 0.05);
+        }
+
+        .about-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .about-image {
+            width: 250px;
+            max-width: 100%;
+            aspect-ratio: 472 / 469;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+            flex-shrink: 0;
+            transition: 0.4s ease;
+        }
+
+        .about-image:hover {
+            transform: scale(1.02);
+            border-color: var(--neon-purple);
+        }
+
+        .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .about-text {
+            flex: 1;
+        }
+
+        .about-text p {
+            font-size: clamp(14px, 1.8vw, 16px);
+            color: var(--text-gray);
+            line-height: 1.7;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* UTS PROJECT SECTION */
+        .project-section {
+            padding: 80px 5%;
+            background: transparent;
+        }
+
+        .essay-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .essay-card {
+            background-color: var(--bg-card);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .essay-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
+        }
+
+        .photo-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 960 / 1280;
+            background-color: #070b14;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .photo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.4s ease;
+        }
+
+        .tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(6, 9, 19, 0.85);
+            color: var(--neon-blue);
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 20px;
+            border: 1px solid var(--neon-blue);
+            backdrop-filter: blur(4px);
+            font-family: var(--code-font);
+        }
+
+        .caption {
+            padding: 18px;
+            font-size: 13.5px;
+            color: var(--text-gray);
+            line-height: 1.5;
+            text-align: justify;
+            flex-grow: 1;
+        }
+
+        /* MAKALAH SECTION */
+        .makalah-section {
+            padding: 80px 5%;
+            background-color: rgba(4, 7, 15, 0.6);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border-top: 1px solid rgba(0, 242, 254, 0.05);
+        }
+
+        .makalah-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .makalah-box {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid var(--neon-blue);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .makalah-box h3 {
+            font-size: clamp(16px, 2.5vw, 20px);
+            margin-bottom: 15px;
+            color: var(--neon-blue);
+            font-weight: 600;
+        }
+
+        .makalah-box p {
+            color: var(--text-gray);
+            font-size: 14.5px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        /* LIGHTBOX FULLSCREEN MODAL */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(4, 7, 15, 0.95);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            max-width: 100%;
+            max-height: 85vh;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            object-fit: contain;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: #fff;
+            font-size: 35px;
+            cursor: pointer;
+        }
+
+        /* FOOTER & SOCIAL ICONS */
+        .footer {
+            background-color: rgba(6, 9, 19, 0.9);
+            padding: 40px 5%;
+            text-align: center;
+            border-top: 1px solid rgba(0, 242, 254, 0.1);
+        }
+
+        .footer p {
+            color: var(--text-gray);
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            color: var(--text-white);
+            font-weight: 600;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-icons a {
+            font-size: 18px;
+            width: 44px;
+            height: 44px;
+            background-color: #0d1527;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            color: var(--text-white);
+            text-decoration: none;
+            transition: 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .icon-wa:hover { background-color: #25D366; box-shadow: 0 0 15px #25D366; transform: translateY(-3px); }
+        .icon-ig:hover { background-color: #E1306C; box-shadow: 0 0 15px #E1306C; transform: translateY(-3px); }
+        .icon-tt:hover { background-color: #000000; box-shadow: 0 0 15px #ffffff; border-color: white; transform: translateY(-3px); }
+
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+
+            .nav-links {
+                position: fixed;
+                top: 65px;
+                right: -100%;
+                width: 240px;
+                height: calc(100vh - 65px);
+                background-color: rgba(6, 9, 19, 0.98);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 40px 30px;
+                gap: 25px;
+                transition: 0.3s ease;
+                border-left: 1px solid rgba(0, 242, 254, 0.15);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .nav-links li {
+                margin-left: 0;
+            }
+
+            .about-container {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+
+            .about-image {
+                width: 200px;
+            }
+
+            .essay-container {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar { padding: 15px 5%; }
+            .hero-section { padding: 90px 15px 30px 15px; }
+            .essay-container { grid-template-columns: 1fr; }
+            .makalah-box { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <nav class="navbar">
+        <div class="nav-logo">NAJ<span>RIL.</span></div>
+        <div class="menu-toggle" id="mobile-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#uts-project">UTS Project</a></li>
+            <li><a href="#makalah">Laporan Analisis</a></li>
+        </ul>
+    </nav>
+
+    <header id="home" class="hero-section">
+        <div class="hero-content">
+            <h1>Halo, Saya <span class="neon-text">Muhamad Najril</span></h1>
+            <div class="typing-text"><span id="typed-target"></span><span class="typed-cursor">|</span></div>
+            <a href="#uts-project" class="btn-primary">Lihat Projek UTS</a>
+        </div>
+    </header>
+
+    <section id="about" class="about-section">
+        <div class="section-title">
+            <h2>About Me</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="about-container">
+            <div class="about-image">
+                <img src="propil.jpeg" alt="Muhamad Najril Simban" width="472" height="469">
+            </div>
+            <div class="about-text">
+                <p>Halo! Nama saya <strong>Muhamad Najril</strong>. Saya adalah seorang mahasiswa Politeknik Haji Anwar Sanusi yang sedang mendalami dunia media digital dan pengembangan perangkat lunak (software development).</p>
+                <p>Website portofolio ini dibangun khusus untuk memenuhi tugas <strong>Ujian Tengah Semester (UTS) Mata Kuliah Visual Storytelling</strong>, sekaligus menjadi ruang digital kreatif untuk mendokumentasikan perjalanan saya dalam merajut baris-baris kode logika.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="uts-project" class="project-section">
+        <div class="section-title">
+            <h2>UTS Visual Storytelling</h2>
+            <p class="subtitle">Tema: Manusia dan Ruang ("Sintaksis dan Sisa Kopi")</p>
+            <div class="underline"></div>
+        </div>
+
+        <div class="essay-container">
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto1.jpeg" alt="Establishing Shot" width="960" height="1280">
+                    <span class="tag">1. Establishing Shot</span>
+                </div>
+                <p class="caption">Di atas karpet hijau dalam kamar kecilku, sebuah lemari putih berdiri menyaksikan ketidakteraturan fisik yang mulai terbangun. Di sinilah, di antara tumpukan buku, tas, kabel pengisi daya, dan sisa kehangatan sore hari, sebuah laptop yang menyala menjadi pusat duniaku.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto2.jpeg" alt="Relationship" width="960" height="1280">
+                    <span class="tag">2. Relationship</span>
+                </div>
+                <p class="caption">Di usiaku yang menginjak 20 tahun, ruang terbatas ini menjadi saksi keintiman antara pikiranku dan teknologi. Duduk menghadap layar, ditemani secangkir kopi, sebatang rokok, dan buku yang terbuka lebar, aku mulai menyelami baris-baris logika yang rumit.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto3.jpeg" alt="Detail" width="960" height="1280">
+                    <span class="tag">3. Detail</span>
+                </div>
+                <p class="caption">Waktu terus bergulir dan suasana perlahan berubah hampa. Layar laptop kini dipenuhi ratusan baris kode yang rumit, kontras dengan segelas kopi yang mulai mendingin dan asbak yang perlahan penuh oleh sisa abu rokok.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto4.jpeg" alt="Portrait" width="960" height="1280">
+                    <span class="tag">4. Portrait</span>
+                </div>
+                <p class="caption">Malam mulai menjemput, namun fokusku tidak pudar. Di tengah kegelapan kamar, aku duduk termenung membedah sintaksis yang menyulitkan, ditemani pendaran cahaya monitor, hidangan kopi, dan kepulan asap rokok yang menjadi penyemangat setia.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto5.jpeg" alt="Gesture/Action" width="960" height="1280">
+                    <span class="tag">5. Gesture / Action</span>
+                </div>
+                <p class="caption">Jemari tanganku bergerak taktis dan cepat di atas papan ketik laptop, menyusun baris demi baris sintaksis. Melalui gerakan ini, aku sedang menerjemahkan ide-ide abstrak di dalam kepala menjadi bahasa logika yang dipahami oleh komputer.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto6.jpeg" alt="Detail Tambahan" width="960" height="1280">
+                    <span class="tag">6. Detail Tambahan</span>
+                </div>
+                <p class="caption">Ketidakteraturan yang berbicara. Barang-barang bawaan kuliah yang berserakan di sudut ruangan kecil ini, berpadu dengan sisa gelas kopi, mempertegas banyaknya beban tugas akademis yang harus diselesaikan malam ini.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto7.jpeg" alt="Action Tambahan" width="960" height="1280">
+                    <span class="tag">7. Action Tambahan</span>
+                </div>
+                <p class="caption">Rasa pusing mulai menjalar di antara barisan kode yang mengalami error. Di tengah kebingungan mengurai sintaksis yang buntu, gawai di tangan menjadi jalan pintas untuk mencari jawaban dan petunjuk penyelesaian.</p>
+            </div>
+
+            <div class="essay-card">
+                <div class="photo-wrapper" onclick="openLightbox(this)">
+                    <img src="poto8.jpeg" alt="Close-up/Sign-off" width="960" height="1280">
+                    <span class="tag">8. Close-up / Sign-off</span>
+                </div>
+                <p class="caption">Titik jenuh melanda; ketika layar laptop perlahan mulai setengah tertutup, tubuhku menyerah dan langsung terbaring di atas kasur. Perjuangan melawan barisan sintaksis hari ini akhirnya harus dihentikan oleh rasa lelah.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAKALAH PENDAMPING SECTION -->
+    <section id="makalah" class="makalah-section">
+        <div class="section-title">
+            <h2>Laporan Analisis Pendamping</h2>
+            <div class="underline"></div>
+        </div>
+        
+        <div class="makalah-container">
+            <div class="makalah-box">
+                <h3>Bab I: Konsep Narasi & Kreatif</h3>
+                <p><strong>Logline:</strong> Menjelang usia 20 tahun, seorang mahasiswa mengisolasi diri di dalam kamarnya yang berantakan, berjuang mengurai kerumitan kode pemrograman di antara kepulan asap rokok dan cangkir kopi yang mendingin.</p>
+                <p><strong>Sinopsis:</strong> Esai foto ini menangkap potret realisme mentah dari kehidupan seorang mahasiswa *software developer* dalam ruang personalnya yang berantakan. Menggunakan alur kronologis waktu dari sore hingga malam hari, karya ini menceritakan pergulatan emosional subjek saat menghadapi *error* pada sistem, dari puncaknya fokus berpikir, hingga titik jenuh yang membuat subjek menyerah dan merebahkan diri di atas kasur.</p>
+                <p><strong>Alasan Pemilihan Subjek & Pesan Utama:</strong> Pemilihan subjek diri sendiri dan elemen keseharian seperti asbak yang penuh, rokok, dan kopi ditujukan untuk membangun pendekatan *Hyper-realism*. Pesan utama yang ingin disampaikan adalah bahwa di balik sebuah produk digital yang rapi, ada proses produksi yang melelahkan, menguras energi emosional, dan dipenuhi oleh batasan-batasan ruang fisik manusiawi.</p>
+            </div>
+
+            <div class="makalah-box">
+                <h3>Bab II: Proses Produksi</h3>
+                <p><strong>Tantangan Teknis & Solusi:</strong> Ruangan kamar yang sempit dan dipenuhi banyak barang bawaan kuliah membatasi ruang gerak kamera. Solusinya adalah memanfaatkan sudut *Top-Down Shot* (pada foto detail kopi dan asbak) untuk memberikan kejelasan tekstur objek, serta teknik pencahayaan *Low Light* alami pada malam hari untuk menangkap pendaran cahaya murni dari monitor laptop.</p>
+                <p><strong>Pencahayaan:</strong> Proses produksi memanfaatkan perubahan waktu alami (*Golden hour* sore hari pada foto 1-2, bertransiasi ke pencahayaan interior redup pada foto malam hari). Cahaya monitor bertindak sebagai *Key Light* sekunder untuk memberikan aksen dramatis pada wajah subjek, mempertegas atmosfer kesendirian dan keheningan ruang.</p>
+            </div>
+
+            <div class="makalah-box">
+                <h3>Bab III: Analisis Visual (Semiotika)</h3>
+                <p><strong>Denotasi & Konotasi:</strong> Secara denotasi, asbak yang penuh, rokok, dan cangkir kopi adalah barang konsumsi harian subjek. Namun secara konotasi, elemen-elemen tersebut merupakan simbol atau representasi dari durasi waktu yang berjalan lambat, beban stres emosional, serta stimulan penenang pikiran saat menghadapi masalah logika yang rumit.</p>
+                <p><strong>Encoding & Decoding:</strong> Penulis mengemas (*encoding*) tanda-tanda kelelahan fisik melalui visual laptop yang setengah tertutup dan posisi tubuh yang terbaring pasrah. Struktur narasi berbasis formula W.P.P.I.E ini diharapkan dapat diuraikan oleh audiens (*decoding*) sebagai bentuk metafora dari batas kemampuan manusia ketika berhadapan dengan dunia digital kaku yang tidak kenal lelah.</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="lightboxModal" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+    </div>
+
+<!-- footer -->
+    <footer class="footer">
+        <p>Copyright &copy; 2026 <span class="highlight">MUHAMAD NAJRIL</span>. All Rights Reserved.</p>
+        <div class="social-icons">
+            <a href="https://wa.me/#" target="_blank" class="icon-wa"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://instagram.com/#" target="_blank" class="icon-ig"><i class="fab fa-instagram"></i></a>
+            <a href="https://tiktok.com/@#" target="_blank" class="icon-tt"><i class="fab fa-tiktok"></i></a>
+        </div>
+    </footer>
+<!-- tutup footer -->
+
+    <script>
+        // 1. MOBILE MENU INTERACTIVE
+        const mobileMenu = document.getElementById('mobile-menu');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenu.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            const spans = mobileMenu.querySelectorAll('span');
+            spans[0].style.transform = navLinks.classList.contains('active') ? 'rotate(45deg) translate(5px, 5px)' : 'none';
+            spans[1].style.opacity = navLinks.classList.contains('active') ? '0' : '1';
+            spans[2].style.transform = navLinks.classList.contains('active') ? 'rotate(-45deg) translate(6px, -6px)' : 'none';
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                const spans = mobileMenu.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            });
+        });
+
+        // 2. AUTO TYPING EFFECT
+        const typedTarget = document.getElementById('typed-target');
+        const phrases = ["Student", "Beginner Software Developer", "Visual Storyteller"];
+        let phraseIdx = 0;
+        let charIdx = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            const currentPhrase = phrases[phraseIdx];
+            if (isDeleting) {
+                typedTarget.textContent = currentPhrase.substring(0, charIdx - 1);
+                charIdx--;
+            } else {
+                typedTarget.textContent = currentPhrase.substring(0, charIdx + 1);
+                charIdx++;
+            }
+
+            let typeSpeed = isDeleting ? 40 : 80;
+
+            if (!isDeleting && charIdx === currentPhrase.length) {
+                typeSpeed = 1500;
+                isDeleting = true;
+            } else if (isDeleting && charIdx === 0) {
+                isDeleting = false;
+                phraseIdx = (phraseIdx + 1) % phrases.length;
+                typeSpeed = 500;
+            }
+
+            setTimeout(typeEffect, typeSpeed);
+        }
+        document.addEventListener("DOMContentLoaded", () => setTimeout(typeEffect, 500));
+
+        // 3. 3D GLOWING MATRIX RAIN EFFECT (EFEK HUJAN GARIS METEOR)
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const particles = [];
+        const particleCount = Math.min(100, Math.floor(width / 10)); // Menyesuaikan kepadatan layar
+
+        class Particle {
+            constructor() {
+                this.reset();
+                this.y = Math.random() * height; // Mengacak posisi tinggi pertama kali
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = -40; 
+                this.length = Math.random() * 25 + 10; // Membuatnya berbentuk garis hujan
+                this.speedY = Math.random() * 2.5 + 1.5; // Kecepatan meluncur turun
+                this.weight = Math.random() * 1.5 + 0.5; // Ketebalan garis neon
+                this.opacity = Math.random() * 0.5 + 0.2; // Transparansi kilau neon
+            }
+
+            update() {
+                this.y += this.speedY;
+
+                // Jika sudah melewati batas bawah screen, reset ke atas lagi
+                if (this.y > height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                // Membuat gradien pudar pada ujung garis hujan agar terlihat estetik berkecepatan tinggi
+                let gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.length);
+                gradient.addColorStop(0, `rgba(0, 242, 254, 0)`);
+                gradient.addColorStop(1, `rgba(0, 242, 254, ${this.opacity})`);
+
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = this.weight;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + this.length);
+                ctx.stroke();
+            }
+        }
+
+        function initParticles() {
+            particles.length = 0;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        initParticles();
+        animateParticles();
+
+        // 4. INTERACTIVE LIGHTBOX
+        const lightbox = document.getElementById('lightboxModal');
+        const lightboxImg = document.getElementById('lightboxImg');
+
+        function openLightbox(element) {
+            const imgClicked = element.querySelector('img');
+            lightboxImg.src = imgClicked.src;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+        }
+    </script>
+</body>
+</html>
